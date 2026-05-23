@@ -1,7 +1,7 @@
 streamlit
 pandas
 numpy
-plotly.express
+plotly
 scikit-learn
 matplotlib
 seaborn
@@ -11,3 +11,5 @@ shapely
 fiona
 pyproj
 merf
+scipy
+requests

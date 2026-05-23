@@ -1,9 +1,6 @@
 streamlit
 pandas
-numpy
 plotly
-scikit-learn
-scipy
 requests
-joblib
-merf
+numpy
+statsmodels

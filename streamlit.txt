@@ -3,13 +3,7 @@ pandas
 numpy
 plotly
 scikit-learn
-matplotlib
-seaborn
-joblib
-geopandas
-shapely
-fiona
-pyproj
-merf
 scipy
 requests
+joblib
+merf

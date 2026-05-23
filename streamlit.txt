@@ -1,7 +1,13 @@
 streamlit
 pandas
-plotly
 numpy
-scipy
-requests
+plotly
 scikit-learn
+matplotlib
+seaborn
+joblib
+geopandas
+shapely
+fiona
+pyproj
+merf

@@ -269,21 +269,47 @@ else:
                 </p>
             </div>
             """, unsafe_allow_html=True)
-            
+
+            # =====================================================================
+            # BAGIAN YANG DIREVISI: 🧮 Persamaan Dasar Model MERF
+            # =====================================================================
             with st.container():
                 st.markdown("<div class='research-card'><h4>🧮 Persamaan Dasar Model MERF</h4>", unsafe_allow_html=True)
-                st.latex(r"y_i = f(X_i) + Z_ib_i + \varepsilon_i")
+                st.latex(r"y_i = f(X_i) + Z_i b_i + \varepsilon_i")
                 st.markdown("""
-                <p style='font-size: 0.85rem; color: #cbd5e1; margin-top: 10px; line-height: 1.4;'>
-                    <b>Keterangan:</b><br>
-                    • y_i: Vektor nilai variabel respon (Tree Cover Loss) untuk subjek provinsi ke-i.<br>
-                    • f(X_i): Fungsi non-linear fixed effects yang diestimasi menggunakan algoritma Random Forest berdasarkan matriks prediktor Xi.<br>
-                    • Z_i: Matriks desain untuk komponen random effects (konstanta intercept untuk tiap provinsi).<br>
-                    • b_i: Vektor penyimpangan acak untuk provinsi ke-i, dimana b_i ~ N(0, D).<br>
-                    • ε_i: Vektor error acak sisaan (residual error), dimana ε_i~N(0,R_i) dengan R_i=σ^2 I_(n_i).
-                </p>
+                <table style='width:100%; border-collapse: collapse; margin-top: 14px; font-size: 0.88rem;'>
+                    <thead>
+                        <tr style='background: rgba(21, 128, 61, 0.4); border-bottom: 2px solid #15803d;'>
+                            <th style='padding: 10px 14px; text-align: center; color: #facc15; width: 20%;'>Simbol</th>
+                            <th style='padding: 10px 14px; text-align: left; color: #facc15;'>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style='border-bottom: 1px solid rgba(255,255,255,0.1);'>
+                            <td style='padding: 9px 14px; text-align: center; color: #fde68a;'>&#x1D466;<sub><i>i</i></sub></td>
+                            <td style='padding: 9px 14px; color: #f8fafc;'>Vektor nilai variabel respon (<i>Tree Cover Loss</i>) untuk subjek provinsi ke-<i>i</i></td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);'>
+                            <td style='padding: 9px 14px; text-align: center; color: #fde68a;'><i>f</i>(&#x1D44B;<sub><i>i</i></sub>)</td>
+                            <td style='padding: 9px 14px; color: #f8fafc;'>Fungsi non-linear <i>fixed effects</i> yang diestimasi menggunakan algoritma <b>Random Forest</b> berdasarkan matriks prediktor <b>X</b><sub><i>i</i></sub></td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid rgba(255,255,255,0.1);'>
+                            <td style='padding: 9px 14px; text-align: center; color: #fde68a;'><b>Z</b><sub><i>i</i></sub></td>
+                            <td style='padding: 9px 14px; color: #f8fafc;'>Matriks desain untuk komponen <i>random effects</i> (konstanta intercept untuk tiap provinsi)</td>
+                        </tr>
+                        <tr style='border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);'>
+                            <td style='padding: 9px 14px; text-align: center; color: #fde68a;'><b>b</b><sub><i>i</i></sub></td>
+                            <td style='padding: 9px 14px; color: #f8fafc;'>Vektor penyimpangan acak (<i>random effects</i>) untuk provinsi ke-<i>i</i>, dimana <b>b</b><sub><i>i</i></sub> &#x223C; <i>N</i>(0, <b>D</b>)</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 9px 14px; text-align: center; color: #fde68a;'>&#x03B5;<sub><i>i</i></sub></td>
+                            <td style='padding: 9px 14px; color: #f8fafc;'>Vektor <i>error</i> acak sisaan (<i>residual error</i>), dimana &#x03B5;<sub><i>i</i></sub> &#x223C; <i>N</i>(0, <b>R</b><sub><i>i</i></sub>) dengan <b>R</b><sub><i>i</i></sub> = &#x03C3;&#xB2;<b>I</b><sub><i>n<sub>i</sub></i></sub></td>
+                        </tr>
+                    </tbody>
+                </table>
                 </div>
                 """, unsafe_allow_html=True)
+            # =====================================================================
 
         st.markdown("""
         <div style='background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%); padding: 25px; border-radius: 15px; border: 1px solid #ef4444; margin-top: 10px;'>

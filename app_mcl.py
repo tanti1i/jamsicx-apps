@@ -281,31 +281,31 @@ else:
                 </p>
                 <table style='width:100%; border-collapse: collapse; font-size: 0.88rem;'>
                     <thead>
-                        <tr style='background: rgba(21, 128, 61, 0.45); border-bottom: 2px solid #15803d;'>
-                            <th style='padding: 10px 14px; text-align: center; color: #facc15; width: 20%; font-weight: 700;'>Simbol</th>
-                            <th style='padding: 10px 14px; text-align: left; color: #facc15; font-weight: 700;'>Keterangan</th>
+                        <tr>
+                            <th style='padding: 8px 14px; text-align: center; color: #facc15; width: 20%; font-weight: 700;'>Simbol</th>
+                            <th style='padding: 8px 14px; text-align: left; color: #facc15; font-weight: 700;'>Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr style='border-bottom: 1px solid rgba(255,255,255,0.1);'>
-                            <td style='padding: 9px 14px; text-align: center; color: #fde68a; font-style: italic;'><i>y</i><sub><i>i</i></sub></td>
-                            <td style='padding: 9px 14px; color: #f8fafc;'>Vektor nilai variabel respon (<i>Tree Cover Loss</i>) untuk subjek provinsi ke-<i>i</i></td>
-                        </tr>
-                        <tr style='border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);'>
-                            <td style='padding: 9px 14px; text-align: center; color: #fde68a; font-style: italic;'><i>f</i>(<b>X</b><sub><i>i</i></sub>)</td>
-                            <td style='padding: 9px 14px; color: #f8fafc;'>Fungsi non-linear <i>fixed effects</i> yang diestimasi menggunakan algoritma <b>Random Forest</b> berdasarkan matriks prediktor <b>X</b><sub><i>i</i></sub></td>
-                        </tr>
-                        <tr style='border-bottom: 1px solid rgba(255,255,255,0.1);'>
-                            <td style='padding: 9px 14px; text-align: center; color: #fde68a;'><b>Z</b><sub><i>i</i></sub></td>
-                            <td style='padding: 9px 14px; color: #f8fafc;'>Matriks desain untuk komponen <i>random effects</i> (konstanta intercept untuk tiap provinsi)</td>
-                        </tr>
-                        <tr style='border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);'>
-                            <td style='padding: 9px 14px; text-align: center; color: #fde68a;'><b>b</b><sub><i>i</i></sub></td>
-                            <td style='padding: 9px 14px; color: #f8fafc;'>Vektor penyimpangan acak (<i>random effects</i>) untuk provinsi ke-<i>i</i>, dimana <b>b</b><sub><i>i</i></sub> &#x223C; <i>N</i>(0, <b>D</b>)</td>
+                        <tr>
+                            <td style='padding: 8px 14px; text-align: center; color: #fde68a; font-style: italic;'><i>y</i><sub><i>i</i></sub></td>
+                            <td style='padding: 8px 14px; color: #f8fafc;'>Vektor nilai variabel respon (<i>Tree Cover Loss</i>) untuk subjek provinsi ke-<i>i</i></td>
                         </tr>
                         <tr>
-                            <td style='padding: 9px 14px; text-align: center; color: #fde68a;'>&#x03B5;<sub><i>i</i></sub></td>
-                            <td style='padding: 9px 14px; color: #f8fafc;'>Vektor <i>error</i> acak sisaan (<i>residual error</i>), dimana &#x03B5;<sub><i>i</i></sub> &#x223C; <i>N</i>(0, <b>R</b><sub><i>i</i></sub>) dengan <b>R</b><sub><i>i</i></sub> = &#x03C3;&#xB2;<b>I</b><sub><i>n</i><sub><i>i</i></sub></sub></td>
+                            <td style='padding: 8px 14px; text-align: center; color: #fde68a; font-style: italic;'><i>f</i>(<b>X</b><sub><i>i</i></sub>)</td>
+                            <td style='padding: 8px 14px; color: #f8fafc;'>Fungsi non-linear <i>fixed effects</i> yang diestimasi menggunakan algoritma <b>Random Forest</b> berdasarkan matriks prediktor <b>X</b><sub><i>i</i></sub></td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 8px 14px; text-align: center; color: #fde68a;'><b>Z</b><sub><i>i</i></sub></td>
+                            <td style='padding: 8px 14px; color: #f8fafc;'>Matriks desain untuk komponen <i>random effects</i> (konstanta intercept untuk tiap provinsi)</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 8px 14px; text-align: center; color: #fde68a;'><b>b</b><sub><i>i</i></sub></td>
+                            <td style='padding: 8px 14px; color: #f8fafc;'>Vektor penyimpangan acak (<i>random effects</i>) untuk provinsi ke-<i>i</i>, dimana <b>b</b><sub><i>i</i></sub> &#x223C; <i>N</i>(0, <b>D</b>)</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 8px 14px; text-align: center; color: #fde68a;'>&#x03B5;<sub><i>i</i></sub></td>
+                            <td style='padding: 8px 14px; color: #f8fafc;'>Vektor <i>error</i> acak sisaan (<i>residual error</i>), dimana &#x03B5;<sub><i>i</i></sub> &#x223C; <i>N</i>(0, <b>R</b><sub><i>i</i></sub>) dengan <b>R</b><sub><i>i</i></sub> = &#x03C3;&#xB2;<b>I</b><sub><i>n</i><sub><i>i</i></sub></sub></td>
                         </tr>
                     </tbody>
                 </table>

@@ -181,7 +181,7 @@ def load_internal_data():
     (Ganti username/repo sesuai repositori Anda yang sebenarnya)
     """
     # ── GANTI URL INI dengan raw URL GitHub Anda yang sebenarnya ──
-    CSV_URL = "https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/data_jamsicx.csv"
+    CSV_URL = "https://raw.githubusercontent.com/tanti1i/jamsicx-apps/refs/heads/main/data_jamsicx.csv"
 
     try:
         df = pd.read_csv(CSV_URL)

@@ -616,13 +616,11 @@ else:
 
         st.markdown("""
         <div style='background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%); padding: 25px; border-radius: 15px; border: 1px solid #ef4444; margin-top: 10px;'>
-            <h5 style='margin: 0 0 10px 0; color: #fca5a5; font-weight: bold;'>⚠️ Batasan Penelitian & Disclaimer Model</h5>
+            <h5 style='margin: 0 0 10px 0; color: #fca5a5; font-weight: bold;'>⚠️ Catatan Batasan Model Prediksi:</h5>
             <ul style='color: #ffeeee; font-size: 0.9rem; line-height: 1.5;'>
-                <li><b>Ketergantungan Data Historis:</b> Model memprediksi berdasarkan tren masa lalu, sehingga tidak bisa membaca perubahan mendadak seperti kebijakan hukum baru atau penegakan hukum di lapangan.</li>
-                <li><b>Optimal Jangka Pendek:</b> Estimasi paling akurat untuk masa depan terdekat. Prediksi terlalu jauh ke depan berisiko memperbesar akumulasi kesalahan (error propagation).</li>
-                <li><b>Efek Wilayah Baru:</b> Jika ada provinsi hasil pemekaran baru, model akan mengabaikan efek acak wilayah (b_i = 0) dan murni menggunakan prediksi rata-rata global.</li>
-                <li><b>Cakupan Variabel Makro:</b> Tidak memperhitungkan faktor pemicu eksternal mendadak (exogenous shocks) di luar variabel terdata.</li>
-                <li><b>Resolusi Spasial Makro:</b> Dirancang untuk memetakan estimasi risiko di tingkat provinsi, bukan untuk mendeteksi penebangan pohon secara real-time di tingkat koordinat petak hutan.</li>
+                <li><b>Skala Makro:</b> Prediksi akurat di tingkat Provinsi, bukan koordinat petak hutan.</li>
+                <li><b>Jangka Pendek:</b> Estimasi terbaik untuk masa depan terdekat (ada akumulasi kesalahan jika terlalu jauh).</li>
+                <li><b>Keterbatasan Data:</b> Tidak mendeteksi perubahan mendadak (kebijakan baru/faktor eksternal) dan wilayah pemekaran baru.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)

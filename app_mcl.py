@@ -242,7 +242,6 @@ if st.session_state.df is None:
 # --- 6. LOGIKA NAVIGASI ---
 if st.session_state.page == "Portal":
     st.markdown("<br><br><h1 class='main-title'>🌳 ForestGuard</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#dcfce7; letter-spacing:2px;'>SISTEM MONITORING DEFORESTASI DINAMIS</p>", unsafe_allow_html=True)
     
     st.markdown("<br>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)

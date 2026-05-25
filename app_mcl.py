@@ -142,7 +142,7 @@ cols_x = {
 @st.cache_data
 def load_geojson():
     try:
-        url = "https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/indonesia-province-simple.json"
+        url = "https://github.com/tanti1i/jamsicx-apps/blob/main/data_jamsicx.csv"
         res = requests.get(url).json()
         for feature in res['features']:
             nama = str(feature['properties'].get('Propinsi', '')).strip().upper()
@@ -177,11 +177,11 @@ def load_geojson():
 def load_internal_data():
     """
     Memuat data deforestasi dari file CSV yang tersimpan di GitHub.
-    URL: https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/data_jamsicx.csv
+    URL: https://github.com/tanti1i/jamsicx-apps/blob/main/data_jamsicx.csv
     (Ganti username/repo sesuai repositori Anda yang sebenarnya)
     """
     # ── GANTI URL INI dengan raw URL GitHub Anda yang sebenarnya ──
-    CSV_URL = "https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/data_jamsicx.csv"
+    CSV_URL = "https://github.com/tanti1i/jamsicx-apps/blob/main/data_jamsicx.csv"
 
     try:
         df = pd.read_csv(CSV_URL)
@@ -232,9 +232,7 @@ PROV_BOUNDS = {
     "PAPUA BARAT":          (-5.0,  1.5, 130.0, 136.5),
     "PAPUA":                (-9.5, -0.5, 131.0, 141.5),
 }
-
 geojson = load_geojson()
-
 # === AUTO-LOAD DATA DARI GITHUB CSV ===
 if st.session_state.df is None:
     st.session_state.df = load_internal_data()

@@ -19,6 +19,7 @@ def set_page(name):
 # --- 3. CSS CUSTOM (FIX KONTRAS WARNA & READABILITY) ---
 st.markdown("""
 <style>
+    /* Background Imersif — HD Premium, No Blur */
     .stApp {
         background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), 
                      url('https://raw.githubusercontent.com/tanti1i/jamsicx-apps/main/404268504069646243.jpg.jpeg');
@@ -30,6 +31,8 @@ st.markdown("""
         image-rendering: crisp-edges;
         color: #ffffff;
     }
+
+    /* === FIX DROPDOWN (SELECTBOX) RE-STYLING === */
     .stSelectbox div[data-baseweb="select"] {
         background-color: #ffffff !important;
         border-radius: 10px;
@@ -43,6 +46,8 @@ st.markdown("""
         font-weight: bold !important;
         font-size: 1.05rem !important;
     }
+
+    /* === FIX FILE UPLOADER RE-STYLING === */
     [data-testid="stFileUploader"] label p {
         color: #facc15 !important;
         font-weight: bold !important;
@@ -57,6 +62,8 @@ st.markdown("""
         color: #ffffff !important;
         border: 1px solid #facc15 !important;
     }
+
+    /* Judul Utama */
     .main-title {
         font-size: 5rem !important;
         font-family: 'Arial Black', sans-serif;
@@ -67,6 +74,8 @@ st.markdown("""
         font-weight: 900 !important;
         filter: drop-shadow(0px 5px 15px rgba(0,0,0,0.9));
     }
+
+    /* Glassmorphism Card */
     .menu-card {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(15px);
@@ -79,6 +88,8 @@ st.markdown("""
         flex-direction: column;
         justify-content: center;
     }
+
+    /* === PREMIUM DARK CHART BACKGROUND (GANTI DARI WHITE) === */
     .stPlotlyChart { 
         background: rgba(15,35,20,0.45) !important;
         backdrop-filter: blur(12px);
@@ -87,8 +98,12 @@ st.markdown("""
         padding: 15px; 
         box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
+
+    /* Metrik */
     [data-testid="stMetricValue"] { color: #ffffff !important; font-weight: 800 !important; font-size: 1.8rem !important; }
     [data-testid="stMetricLabel"] { color: #facc15 !important; font-weight: bold !important; font-size: 0.9rem !important; }
+
+    /* Tombol Navigasi Umum */
     div.stButton > button {
         background: linear-gradient(135deg, #15803d 0%, #166534 100%) !important;
         color: white !important;
@@ -96,6 +111,8 @@ st.markdown("""
         border-radius: 12px;
         width: 100%;
     }
+
+    /* Info Research Cards Styling */
     .research-card {
         background: rgba(15, 23, 42, 0.65);
         border: 1px solid rgba(250, 191, 36, 0.3);
@@ -113,26 +130,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 4. DEFINISI KOLOM STANDAR (nama baku setelah normalisasi) ---
-# Nama-nama ini adalah nama BAKU yang akan dipakai di seluruh app.
-# Saat load CSV, kolom asli akan di-rename ke nama baku ini.
-col_y  = "Y"
+# --- 4. DEFINISI KOLOM ---
+col_y = "Y (TREE COVER LOSS- Ha)"
 cols_x = {
-    "X1": "X1",
-    "X2": "X2",
-    "X3": "X3",
-    "X4": "X4",
-    "X5": "X5",
-    "X6": "X6",
-}
-# Label tampilan untuk chart (tetap deskriptif)
-cols_x_label = {
     "X1": "X1 (LUAS PENUTUPAN LAHAN - RIBU Ha)",
     "X2": "X2 (LUAS KEBAKARAN HUTAN DAN LAHAN - Ha)",
     "X3": "X3 (TOTAL LUAS TANAMAN PERKEBUNAN - RIBU Ha)",
     "X4": "X4 (KEPADATAN PENDUDUK - jiwa/km2)",
     "X5": "X5 (TOTAL POPULASI TERNAK - EKOR)",
-    "X6": "X6 (PDRB PERTAMBANGAN DAN PENGGALIAN PERSEN)",
+    "X6": "X6 (PDRB PERTAMBANGAN DAN PENGGALIAN PERSEN)"
 }
 
 # --- 5. DATA LOADING ---
@@ -172,60 +178,27 @@ def load_geojson():
 
 @st.cache_data
 def load_internal_data():
-    """
-    Load CSV lalu normalisasi nama kolom:
-    - Kolom yang diawali 'Y' (case-insensitive, setelah strip) → rename ke 'Y'
-    - Kolom yang diawali 'X1' s/d 'X6' → rename ke 'X1' s/d 'X6'
-    - Kolom 'PROVINSI' dan 'TAHUN' tetap.
-    Strategi ini kebal terhadap perbedaan spasi, tanda kurung, atau
-    kapitalisasi pada header CSV.
-    """
     CSV_URL = "https://raw.githubusercontent.com/tanti1i/jamsicx-apps/refs/heads/main/data_jamsicx.csv"
     try:
         df = pd.read_csv(CSV_URL)
-        # Strip spasi di semua nama kolom
         df.columns = df.columns.str.strip()
-
-        # Buat mapping: nama_asli → nama_baku
-        rename_map = {}
-        for col in df.columns:
-            col_up = col.strip().upper()
-            # Cek Y
-            if col_up.startswith('Y') and col_up not in ('YAHUN',):
-                # Pastikan bukan TAHUN atau PROVINSI
-                if col_up not in ('TAHUN', 'PROVINSI'):
-                    rename_map[col] = 'Y'
-            # Cek X1–X6
-            for xi in ['X1','X2','X3','X4','X5','X6']:
-                if col_up.startswith(xi):
-                    rename_map[col] = xi
-                    break
-
-        df = df.rename(columns=rename_map)
-
-        # Normalisasi PROVINSI & TAHUN
         if 'PROVINSI' in df.columns:
             df['PROVINSI'] = df['PROVINSI'].astype(str).str.strip().str.upper()
         if 'TAHUN' in df.columns:
-            df['TAHUN'] = pd.to_numeric(df['TAHUN'], errors='coerce').astype('Int64')
-
-        # Konversi semua kolom numerik (Y, X1–X6)
-        for std_col in ['Y', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6']:
-            if std_col in df.columns:
-                df[std_col] = pd.to_numeric(
-                    df[std_col].astype(str)
-                        .str.replace(',', '', regex=False)
-                        .str.strip(),
+            df['TAHUN'] = df['TAHUN'].astype(int)
+        # ── REVISI: Konversi semua kolom X & Y ke numerik saat loading ──
+        for col_key, col_name in {**{"Y": col_y}, **cols_x}.items():
+            if col_name in df.columns:
+                df[col_name] = pd.to_numeric(
+                    df[col_name].astype(str).str.replace(',', '').str.strip(),
                     errors='coerce'
                 )
-
         return df
-
     except Exception as e:
         st.error(f"❌ Gagal memuat data dari GitHub: {e}")
         return None
 
-# Batas lat/lon per provinsi
+# Batas lat/lon per provinsi — dipakai untuk zoom peta yang akurat
 PROV_BOUNDS = {
     "ACEH":                 (-0.5,  6.5,  94.0,  99.5),
     "SUMATERA UTARA":       ( 0.5,  4.5,  97.5, 100.5),
@@ -265,12 +238,14 @@ PROV_BOUNDS = {
 
 geojson = load_geojson()
 
+# === AUTO-LOAD DATA DARI GITHUB CSV ===
 if st.session_state.df is None:
     st.session_state.df = load_internal_data()
 
 # --- 6. LOGIKA NAVIGASI ---
 if st.session_state.page == "Portal":
     st.markdown("<br><br><h1 class='main-title'>🌳 ForestGuard</h1>", unsafe_allow_html=True)
+    
     st.markdown("<br>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     is_locked = st.session_state.df is None
@@ -291,7 +266,7 @@ else:
     st.markdown("---")
 
     # =========================================================
-    # DASHBOARD
+    # DASHBOARD — REVISI LENGKAP
     # =========================================================
     if st.session_state.page == "Dashboard" and st.session_state.df is not None:
         df = st.session_state.df
@@ -306,8 +281,9 @@ else:
             unsafe_allow_html=True
         )
 
-        C_BG      = 'rgba(15,35,20,0.65)'
-        C_PLOT    = 'rgba(25,50,30,0.55)'
+        # ── Konstanta Warna Premium ──────────────────────────────
+        C_BG = 'rgba(15,35,20,0.65)'
+        C_PLOT = 'rgba(25,50,30,0.55)'
         C_TEXT    = '#cbd5e1'
         C_GOLD    = '#facc15'
         C_GRID    = 'rgba(255,255,255,0.06)'
@@ -326,7 +302,7 @@ else:
         # ── Filter Row ───────────────────────────────────────────
         fc1, fc2, fc3 = st.columns([1, 1.2, 1])
         with fc1:
-            list_thn = sorted(df['TAHUN'].dropna().unique(), reverse=True)
+            list_thn = sorted(df['TAHUN'].unique(), reverse=True)
             sel_thn = st.selectbox("📅 Pilih Tahun:", list_thn)
         with fc2:
             list_prov = ["Semua Provinsi"] + sorted(df['PROVINSI'].unique().tolist())
@@ -338,7 +314,7 @@ else:
         g_min = 0
         g_max = 200000
 
-        # ── PETA CHOROPLETH ───────────────────────────────────────
+        # ── PETA CHOROPLETH (full-width) ──────────────────────────
         if geojson:
             fig_map = px.choropleth(
                 data_frame=df_yr,
@@ -358,7 +334,10 @@ else:
                 lon_range = [93.5, 142.5]
                 map_title = f"🌳 Tree Cover Loss per Provinsi — {sel_thn}"
             else:
-                bounds = PROV_BOUNDS.get(sel_prov, (-11.5, 7.5, 93.5, 142.5))
+                bounds = PROV_BOUNDS.get(
+                    sel_prov,
+                    (-11.5, 7.5, 93.5, 142.5)
+                )
                 lat_pad = (bounds[1] - bounds[0]) * 0.12
                 lon_pad = (bounds[3] - bounds[2]) * 0.12
                 lat_range = [bounds[0] - lat_pad, bounds[1] + lat_pad]
@@ -366,159 +345,189 @@ else:
                 map_title = f"🌳 Tree Cover Loss — {sel_prov}  |  Tahun {sel_thn}"
 
             fig_map.update_geos(
-                lataxis_range=lat_range, lonaxis_range=lon_range,
-                visible=False, bgcolor='rgba(0,0,0,0)',
-                showland=True, landcolor='rgba(0,0,0,0)',
-                showocean=True, oceancolor='rgba(0,0,0,0)',
-                showlakes=True, lakecolor='rgba(0,0,0,0)',
-                showcoastlines=True, coastlinecolor='rgba(255,255,255,0.15)',
-                coastlinewidth=0.5, showframe=False,
+                lataxis_range=lat_range,
+                lonaxis_range=lon_range,
+                visible=False,
+                bgcolor='rgba(0,0,0,0)',
+                showland=True,
+                landcolor='rgba(0,0,0,0)',
+                showocean=True,
+                oceancolor='rgba(0,0,0,0)',
+                showlakes=True,
+                lakecolor='rgba(0,0,0,0)',
+                showcoastlines=True,
+                coastlinecolor='rgba(255,255,255,0.15)',
+                coastlinewidth=0.5,
+                showframe=False,
             )
+
             if sel_prov != "Semua Provinsi":
-                fig_map.update_traces(marker_line_color=C_GOLD, marker_line_width=1.2,
-                                      selector=dict(type='choropleth'))
+                fig_map.update_traces(
+                    marker_line_color=C_GOLD,
+                    marker_line_width=1.2,
+                    selector=dict(type='choropleth')
+                )
             else:
-                fig_map.update_traces(marker_line_color='rgba(255,255,255,0.15)',
-                                      marker_line_width=0.5)
+                fig_map.update_traces(
+                    marker_line_color='rgba(255,255,255,0.15)',
+                    marker_line_width=0.5,
+                )
 
             fig_map.update_layout(
                 height=560,
                 margin={"r": 80, "t": 50, "l": 0, "b": 0},
-                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
                 font=dict(color=C_TEXT, family="Arial, sans-serif"),
-                title=dict(text=map_title,
-                           font=dict(color=C_GOLD, size=15, family="Arial Black"),
-                           x=0.01, y=0.98),
+                title=dict(
+                    text=map_title,
+                    font=dict(color=C_GOLD, size=15, family="Arial Black"),
+                    x=0.01, y=0.98,
+                ),
                 coloraxis_colorbar=dict(
-                    title=dict(text="Tree Cover<br>Loss (Ha)",
-                               font=dict(color=C_TEXT, size=11)),
+                    title=dict(
+                        text="Tree Cover<br>Loss (Ha)",
+                        font=dict(color=C_TEXT, size=11)
+                    ),
                     tickfont=dict(color=C_TEXT, size=9),
                     bgcolor='rgba(7,20,34,0.85)',
-                    bordercolor=C_BORDER, borderwidth=1,
-                    len=0.80, thickness=22, x=1.03, tickformat=',d',
+                    bordercolor=C_BORDER,
+                    borderwidth=1,
+                    len=0.80,
+                    thickness=22,
+                    x=1.03,
+                    tickformat=',d',
                 ),
             )
+
             st.plotly_chart(fig_map, use_container_width=True)
 
-        # ── METRIC CARDS ──────────────────────────────────────────
+        # ── METRIC CARDS (jika provinsi spesifik) ────────────────
         if sel_prov != "Semua Provinsi":
             row_prov = df_yr[df_yr['PROVINSI'] == sel_prov]
             if not row_prov.empty:
-                loss_val     = row_prov[col_y].values[0]
-                rank_val     = int(df_yr[col_y].rank(ascending=False).loc[row_prov.index[0]])
+                loss_val = row_prov[col_y].values[0]
+                rank_val = int(df_yr[col_y].rank(ascending=False).loc[row_prov.index[0]])
                 pct_nasional = (loss_val / df_yr[col_y].sum()) * 100
+                df_prev = df[(df['TAHUN'] == sel_thn - 1) & (df['PROVINSI'] == sel_prov)]
+
                 sp1, m1, m2, m3, sp2 = st.columns([2, 3, 3, 3, 2])
                 with m1:
-                    st.metric("🌲 Tree Cover Loss", f"{loss_val:,.0f} Ha")
+                     st.metric("🌲 Tree Cover Loss", f"{loss_val:,.0f} Ha")
                 with m2:
                     st.metric("🏆 Ranking Nasional", f"#{rank_val} / 34")
                 with m3:
                     st.metric("📊 % Kontribusi Nasional", f"{pct_nasional:.2f}%")
 
-        # ── SCATTER + BAR/TREN ────────────────────────────────────
+        # ── BARIS BAWAH: Scatter + Bar/Tren ──────────────────────
         col_l, col_r = st.columns([1, 1])
 
         with col_l:
-            # Kolom baku (sudah pasti ada setelah rename)
-            x_col = cols_x[var_x]           # e.g. "X5"
-            x_label = cols_x_label[var_x]   # label deskriptif untuk tampilan
+            # ── REVISI: Siapkan data scatter dengan cleaning ketat ──
+            x_col_name = cols_x[var_x]
 
             if sel_prov == "Semua Provinsi":
                 df_sc_raw = df_yr.copy()
                 hover_col = "PROVINSI"
-                sc_title  = f"Korelasi {var_x} vs Tree Cover Loss — {sel_thn}"
+                sc_title = f"Korelasi {var_x} vs Tree Cover Loss — {sel_thn}"
             else:
                 df_sc_raw = df[df['PROVINSI'] == sel_prov].sort_values('TAHUN').copy()
                 hover_col = "TAHUN"
-                sc_title  = f"Korelasi {var_x} vs TCL — {sel_prov} (2015–2024)"
+                sc_title = f"Korelasi {var_x} vs TCL — {sel_prov} (2015–2024)"
 
-            # Cek kolom tersedia di dataframe
-            if x_col not in df_sc_raw.columns or col_y not in df_sc_raw.columns:
-                st.warning(f"⚠️ Kolom **{x_col}** tidak ditemukan di dataset.")
-            else:
-                # Ambil hanya kolom yang dibutuhkan, bersihkan
-                df_sc = df_sc_raw[[hover_col, x_col, col_y]].copy()
-                df_sc = df_sc.replace([np.inf, -np.inf], np.nan).dropna(
-                    subset=[x_col, col_y]
+            # ── Cleaning: pastikan kedua kolom numerik, buang NaN/inf ──
+            df_sc = df_sc_raw[[hover_col, x_col_name, col_y]].copy()
+            df_sc[x_col_name] = pd.to_numeric(
+                df_sc[x_col_name].astype(str).str.replace(',', '').str.strip(),
+                errors='coerce'
+            )
+            df_sc[col_y] = pd.to_numeric(
+                df_sc[col_y].astype(str).str.replace(',', '').str.strip(),
+                errors='coerce'
+            )
+            df_sc = df_sc.replace([np.inf, -np.inf], np.nan).dropna(
+                subset=[x_col_name, col_y]
+            )
+
+            # ── Cek apakah data cukup untuk trendline OLS ──
+            # OLS butuh minimal 2 titik dengan variasi (tidak semua nilai sama)
+            can_trendline = (
+                len(df_sc) >= 2
+                and df_sc[x_col_name].nunique() > 1
+                and df_sc[col_y].nunique() > 1
+            )
+
+            if df_sc.empty:
+                # Tampilkan pesan informatif jika tidak ada data valid
+                st.markdown(
+                    f"""
+                    <div style='background:rgba(15,35,20,0.65); border:1px solid rgba(250,204,21,0.20);
+                                border-radius:20px; padding:30px; height:370px;
+                                display:flex; flex-direction:column; justify-content:center; align-items:center;'>
+                        <p style='color:#facc15; font-size:1.1rem; font-weight:700; text-align:center;'>
+                            ⚠️ Data {var_x} Tidak Tersedia
+                        </p>
+                        <p style='color:#94a3b8; font-size:0.9rem; text-align:center;'>
+                            Kolom <b>{x_col_name}</b> tidak memiliki data numerik valid
+                            untuk filter yang dipilih.
+                        </p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
+            else:
+                try:
+                    fig_sc = px.scatter(
+                        df_sc,
+                        x=x_col_name,
+                        y=col_y,
+                        color=col_y,
+                        trendline="ols" if can_trendline else None,
+                        hover_name=hover_col,
+                        color_continuous_scale=CUSTOM_SCALE,
+                        range_color=[g_min, g_max],
+                        title=sc_title,
+                        labels={col_y: "TCL (Ha)", x_col_name: var_x},
+                    )
+                except Exception:
+                    # Fallback: scatter tanpa trendline jika OLS tetap gagal
+                    fig_sc = px.scatter(
+                        df_sc,
+                        x=x_col_name,
+                        y=col_y,
+                        color=col_y,
+                        trendline=None,
+                        hover_name=hover_col,
+                        color_continuous_scale=CUSTOM_SCALE,
+                        range_color=[g_min, g_max],
+                        title=sc_title + " (trendline tidak tersedia)",
+                        labels={col_y: "TCL (Ha)", x_col_name: var_x},
+                    )
 
-                if df_sc.empty:
-                    st.markdown(
-                        f"""
-                        <div style='background:rgba(15,35,20,0.65);
-                                    border:1px solid rgba(250,204,21,0.20);
-                                    border-radius:20px; padding:30px; height:370px;
-                                    display:flex; flex-direction:column;
-                                    justify-content:center; align-items:center;'>
-                            <p style='color:#facc15; font-size:1.1rem;
-                                      font-weight:700; text-align:center;'>
-                                ⚠️ Data {var_x} Tidak Tersedia
-                            </p>
-                            <p style='color:#94a3b8; font-size:0.9rem; text-align:center;'>
-                                Tidak ada data numerik valid untuk filter yang dipilih.
-                            </p>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                else:
-                    can_trendline = (
-                        len(df_sc) >= 2
-                        and df_sc[x_col].nunique() > 1
-                        and df_sc[col_y].nunique() > 1
-                    )
-                    try:
-                        fig_sc = px.scatter(
-                            df_sc,
-                            x=x_col,
-                            y=col_y,
-                            color=col_y,
-                            trendline="ols" if can_trendline else None,
-                            hover_name=hover_col,
-                            color_continuous_scale=CUSTOM_SCALE,
-                            range_color=[g_min, g_max],
-                            title=sc_title,
-                            labels={col_y: "TCL (Ha)", x_col: x_label},
-                        )
-                    except Exception:
-                        fig_sc = px.scatter(
-                            df_sc,
-                            x=x_col,
-                            y=col_y,
-                            color=col_y,
-                            trendline=None,
-                            hover_name=hover_col,
-                            color_continuous_scale=CUSTOM_SCALE,
-                            range_color=[g_min, g_max],
-                            title=sc_title + " *(trendline tidak tersedia)*",
-                            labels={col_y: "TCL (Ha)", x_col: x_label},
-                        )
-
-                    fig_sc.update_layout(
-                        paper_bgcolor=C_BG, plot_bgcolor=C_PLOT,
-                        font=dict(color=C_TEXT, size=11),
-                        title=dict(font=dict(color=C_GOLD, size=13), x=0.01),
-                        xaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID,
-                                   linecolor=C_BORDER),
-                        yaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID,
-                                   linecolor=C_BORDER),
-                        coloraxis_colorbar=dict(
-                            title=dict(text="Loss (Ha)",
-                                       font=dict(color=C_TEXT, size=10)),
-                            tickfont=dict(color=C_TEXT, size=8),
-                            bgcolor='rgba(7,20,34,0.85)',
-                            bordercolor=C_BORDER, borderwidth=1,
-                            len=0.80, thickness=11, tickformat=',d',
-                        ),
-                        height=370,
-                        margin=dict(l=10, r=10, t=50, b=10),
-                    )
-                    st.plotly_chart(fig_sc, use_container_width=True)
+                fig_sc.update_layout(
+                    paper_bgcolor=C_BG,
+                    plot_bgcolor=C_PLOT,
+                    font=dict(color=C_TEXT, size=11),
+                    title=dict(font=dict(color=C_GOLD, size=13), x=0.01),
+                    xaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID, linecolor=C_BORDER),
+                    yaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID, linecolor=C_BORDER),
+                    coloraxis_colorbar=dict(
+                        title=dict(text="Loss (Ha)", font=dict(color=C_TEXT, size=10)),
+                        tickfont=dict(color=C_TEXT, size=8),
+                        bgcolor='rgba(7,20,34,0.85)',
+                        bordercolor=C_BORDER, borderwidth=1,
+                        len=0.80, thickness=11,
+                        tickformat=',d',
+                    ),
+                    height=370,
+                    margin=dict(l=10, r=10, t=50, b=10),
+                )
+                st.plotly_chart(fig_sc, use_container_width=True)
 
         with col_r:
             if sel_prov != "Semua Provinsi":
-                df_ts  = df[df['PROVINSI'] == sel_prov].sort_values('TAHUN')
-                fig_r  = px.area(
+                df_ts = df[df['PROVINSI'] == sel_prov].sort_values('TAHUN')
+                fig_r = px.area(
                     df_ts, x='TAHUN', y=col_y,
                     title=f"📉 Tren Deforestasi — {sel_prov}",
                     labels={col_y: "TCL (Ha)", "TAHUN": "Tahun"},
@@ -552,7 +561,8 @@ else:
                 fig_r.update_layout(coloraxis_showscale=False)
 
             fig_r.update_layout(
-                paper_bgcolor=C_BG, plot_bgcolor=C_PLOT,
+                paper_bgcolor=C_BG,
+                plot_bgcolor=C_PLOT,
                 font=dict(color=C_TEXT, size=11),
                 title=dict(font=dict(color=C_GOLD, size=13), x=0.01),
                 xaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID,
@@ -572,9 +582,9 @@ else:
         st.header("📈 Prediksi Deforestasi Multi-Tahun (MERF)")
         prov_target = st.selectbox("Fokus Wilayah Prediksi:", sorted(df['PROVINSI'].unique()))
         hist = df[df['PROVINSI'] == prov_target].sort_values('TAHUN')
-
+        
         raw_weights = np.random.dirichlet([5, 3.5, 2, 1])
-
+        
         st.info("Sistem sedang memproses algoritma MERF untuk " + prov_target)
 
     # =========================================================
@@ -583,7 +593,7 @@ else:
     elif st.session_state.page == "Penelitian":
         st.markdown("<h2 style='text-align:center; color:#facc15; font-weight: 800;'>📖 Info Penelitian</h2>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
-
+        
         rc1, rc2 = st.columns(2)
         with rc1:
             st.markdown("""
@@ -595,7 +605,7 @@ else:
                 </ul>
             </div>
             """, unsafe_allow_html=True)
-
+            
             st.markdown("""
             <div class='research-card'>
                 <h4>📊 Sumber Data Penelitian</h4>
@@ -606,7 +616,7 @@ else:
                 </ul>
             </div>
             """, unsafe_allow_html=True)
-
+            
         with rc2:
             st.markdown("""
             <div class='research-card'>

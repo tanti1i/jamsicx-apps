@@ -91,7 +91,7 @@ st.markdown("""
 
     /* === PREMIUM DARK CHART BACKGROUND (GANTI DARI WHITE) === */
     .stPlotlyChart { 
-        background: rgba(10, 20, 38, 0.88) !important;
+        background: rgba(15,35,20,0.45) !important;
         backdrop-filter: blur(12px);
         border: 1px solid rgba(250, 204, 21, 0.18) !important;
         border-radius: 20px; 
@@ -282,10 +282,10 @@ else:
         )
 
         # ── Konstanta Warna Premium ──────────────────────────────
-        C_BG      = '#071422'      # latar chart
-        C_PLOT    = '#0d1f35'      # latar area plot
-        C_TEXT    = '#cbd5e1'      # teks chart
-        C_GOLD    = '#facc15'      # aksen emas
+        C_BG = 'rgba(15,35,20,0.65)'      # latar chart
+        C_PLOT = 'rgba(25,50,30,0.55)'    # latar area plot
+        C_TEXT    = '#cbd5e1'             # teks chart
+        C_GOLD    = '#facc15'             # aksen emas
         C_GRID    = 'rgba(255,255,255,0.06)'
         C_BORDER  = 'rgba(250,204,21,0.20)'
 

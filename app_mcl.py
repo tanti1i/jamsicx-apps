@@ -22,7 +22,7 @@ st.markdown("""
     /* Background Imersif — HD Premium, No Blur */
     .stApp {
         background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), 
-                     url('https://raw.githubusercontent.com/tanti1i/jamsicx-apps/refs/heads/main/1025343040186607754.jpg.jpeg');
+                     url('https://github.com/tanti1i/jamsicx-apps/edit/main/download%20(3).jpeg');
         background-size: cover;
         background-position: center top;
         background-attachment: fixed;

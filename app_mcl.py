@@ -133,14 +133,15 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 4. DEFINISI KOLOM ---
-col_y = "Y (TREE COVER LOSS- Ha)"
+col_y = "Y"
+
 cols_x = {
-    "X1": "X1 (LUAS PENUTUPAN LAHAN - RIBU Ha)",
-    "X2": "X2 (LUAS KEBAKARAN HUTAN DAN LAHAN - Ha)",
-    "X3": "X3 (TOTAL LUAS TANAMAN PERKEBUNAN - RIBU Ha)",
-    "X4": "X4 (KEPADATAN PENDUDUK - jiwa/km2)",
-    "X5": "X5 (TOTAL POPULASI TERNAK - EKOR)",
-    "X6": "X6 (PDRB PERTAMBANGAN DAN PENGGALIAN PERSEN)"
+    "X1": "X1",
+    "X2": "X2",
+    "X3": "X3",
+    "X4": "X4",
+    "X5": "X5",
+    "X6": "X6"
 }
 
 # --- 5. DATA LOADING ---

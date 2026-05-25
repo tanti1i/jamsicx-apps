@@ -411,9 +411,9 @@ else:
                 pct_nasional = (loss_val / df_yr[col_y].sum()) * 100
                 df_prev = df[(df['TAHUN'] == sel_thn - 1) & (df['PROVINSI'] == sel_prov)]
 
-                m1, m2, m3, m4 = st.columns(4)
+                sp1, m1, m2, m3, sp2 = st.columns([2, 3, 3, 3, 2])
                 with m1:
-                    st.metric("🌲 Tree Cover Loss", f"{loss_val:,.0f} Ha")
+                     st.metric("🌲 Tree Cover Loss", f"{loss_val:,.0f} Ha")
                 with m2:
                     st.metric("🏆 Ranking Nasional", f"#{rank_val} / 34")
                 with m3:

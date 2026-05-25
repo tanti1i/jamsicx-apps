@@ -182,7 +182,6 @@ def load_internal_data():
     try:
         df = pd.read_csv(CSV_URL)
         df.columns = df.columns.str.strip()
-        df.columns = df.columns.str.replace(r'\s+', ' ', regex=True)
         if 'PROVINSI' in df.columns:
             df['PROVINSI'] = df['PROVINSI'].astype(str).str.strip().str.upper()
         if 'TAHUN' in df.columns:
@@ -196,7 +195,7 @@ def load_internal_data():
                 )
         return df
     except Exception as e:
-        st.error(f"Gagal memuat data dari GitHub: {e}")
+        st.error(f"❌ Gagal memuat data dari GitHub: {e}")
         return None
 
 # Batas lat/lon per provinsi — dipakai untuk zoom peta yang akurat
@@ -424,6 +423,7 @@ else:
         col_l, col_r = st.columns([1, 1])
 
         with col_l:
+            # ── REVISI: Siapkan data scatter dengan cleaning ketat ──
             x_col_name = cols_x[var_x]
 
             if sel_prov == "Semua Provinsi":
@@ -435,27 +435,22 @@ else:
                 hover_col = "TAHUN"
                 sc_title = f"Korelasi {var_x} vs TCL — {sel_prov} (2015–2024)"
 
-            # ── REVISI FIX: cek kolom tersedia sebelum slicing ──
-            cols_needed = [c for c in [hover_col, x_col_name, col_y] if c in df_sc_raw.columns]
-            missing = [c for c in [hover_col, x_col_name, col_y] if c not in df_sc_raw.columns]
-            if missing:
-                st.warning(f"Kolom tidak ditemukan: {missing}")
-                df_sc = pd.DataFrame()
-            else:
-                df_sc = df_sc_raw[cols_needed].copy()
-                df_sc[x_col_name] = pd.to_numeric(
-                    df_sc[x_col_name].astype(str).str.replace(',', '').str.strip(),
-                    errors='coerce'
-                )
-                df_sc[col_y] = pd.to_numeric(
-                    df_sc[col_y].astype(str).str.replace(',', '').str.strip(),
-                    errors='coerce'
-                )
-                df_sc = df_sc.replace([np.inf, -np.inf], np.nan).dropna(
-                    subset=[x_col_name, col_y]
-                )
+            # ── Cleaning: pastikan kedua kolom numerik, buang NaN/inf ──
+            df_sc = df_sc_raw[[hover_col, x_col_name, col_y]].copy()
+            df_sc[x_col_name] = pd.to_numeric(
+                df_sc[x_col_name].astype(str).str.replace(',', '').str.strip(),
+                errors='coerce'
+            )
+            df_sc[col_y] = pd.to_numeric(
+                df_sc[col_y].astype(str).str.replace(',', '').str.strip(),
+                errors='coerce'
+            )
+            df_sc = df_sc.replace([np.inf, -np.inf], np.nan).dropna(
+                subset=[x_col_name, col_y]
+            )
 
             # ── Cek apakah data cukup untuk trendline OLS ──
+            # OLS butuh minimal 2 titik dengan variasi (tidak semua nilai sama)
             can_trendline = (
                 len(df_sc) >= 2
                 and df_sc[x_col_name].nunique() > 1
@@ -463,13 +458,14 @@ else:
             )
 
             if df_sc.empty:
+                # Tampilkan pesan informatif jika tidak ada data valid
                 st.markdown(
                     f"""
                     <div style='background:rgba(15,35,20,0.65); border:1px solid rgba(250,204,21,0.20);
                                 border-radius:20px; padding:30px; height:370px;
                                 display:flex; flex-direction:column; justify-content:center; align-items:center;'>
                         <p style='color:#facc15; font-size:1.1rem; font-weight:700; text-align:center;'>
-                            Data {var_x} Tidak Tersedia
+                            ⚠️ Data {var_x} Tidak Tersedia
                         </p>
                         <p style='color:#94a3b8; font-size:0.9rem; text-align:center;'>
                             Kolom <b>{x_col_name}</b> tidak memiliki data numerik valid
@@ -494,6 +490,7 @@ else:
                         labels={col_y: "TCL (Ha)", x_col_name: var_x},
                     )
                 except Exception:
+                    # Fallback: scatter tanpa trendline jika OLS tetap gagal
                     fig_sc = px.scatter(
                         df_sc,
                         x=x_col_name,
@@ -674,7 +671,7 @@ else:
 
         st.markdown("""
         <div style='background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%); padding: 25px; border-radius: 15px; border: 1px solid #ef4444; margin-top: 10px;'>
-            <h5 style='margin: 0 0 10px 0; color: #fca5a5; font-weight: bold;'>Batasan Penelitian & Disclaimer Model</h5>
+            <h5 style='margin: 0 0 10px 0; color: #fca5a5; font-weight: bold;'>⚠️ Batasan Penelitian & Disclaimer Model</h5>
             <ul style='color: #ffeeee; font-size: 0.9rem; line-height: 1.5;'>
                 <li><b>Ketergantungan Data Historis:</b> Model memprediksi berdasarkan tren masa lalu, sehingga tidak bisa membaca perubahan mendadak seperti kebijakan hukum baru atau penegakan hukum di lapangan.</li>
                 <li><b>Optimal Jangka Pendek:</b> Estimasi paling akurat untuk masa depan terdekat. Prediksi terlalu jauh ke depan berisiko memperbesar akumulasi kesalahan (error propagation).</li>

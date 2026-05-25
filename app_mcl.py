@@ -310,8 +310,8 @@ else:
 
         df_yr = df[df['TAHUN'] == sel_thn].copy()
         # Gunakan range global agar skala warna konsisten antar tahun
-        g_min = float(df[col_y].min())
-        g_max = float(df[col_y].max())
+        g_min = 0
+        g_max = 200000
 
         # ── PETA CHOROPLETH (full-width) ──────────────────────────
         if geojson:
@@ -418,14 +418,6 @@ else:
                     st.metric("🏆 Ranking Nasional", f"#{rank_val} / 34")
                 with m3:
                     st.metric("📊 % Kontribusi Nasional", f"{pct_nasional:.2f}%")
-                with m4:
-                    if not df_prev.empty:
-                        prev = df_prev[col_y].values[0]
-                        delta_pct = ((loss_val - prev) / prev) * 100
-                        st.metric("📈 Perubahan YoY", f"{delta_pct:+.1f}%",
-                                  delta=f"{delta_pct:+.1f}%", delta_color="inverse")
-                    else:
-                        st.metric("📈 Perubahan YoY", "—")
 
         # ── BARIS BAWAH: Scatter + Bar/Tren ──────────────────────
         col_l, col_r = st.columns([1, 1])

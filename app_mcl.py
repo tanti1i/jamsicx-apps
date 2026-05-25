@@ -22,7 +22,7 @@ st.markdown("""
     /* Background Imersif */
     .stApp {
         background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
-                    url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2000&auto=format&fit=crop');
+                     url('https://raw.githubusercontent.com/tanti1i/jamsicx-apps/refs/heads/main/404268504069646243.jpg.jpeg');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;

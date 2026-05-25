@@ -147,7 +147,7 @@ cols_x = {
 @st.cache_data
 def load_geojson():
     try:
-        url = "https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/indonesia-province-simple.json"
+        url = "https://raw.githubusercontent.com/tanti1i/jamsicx-apps/refs/heads/main/data_jamsicx.csv"
         res = requests.get(url).json()
         for feature in res['features']:
             nama = str(feature['properties'].get('Propinsi', '')).strip().upper()

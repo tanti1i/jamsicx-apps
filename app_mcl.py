@@ -437,7 +437,13 @@ else:
                 sc_title = f"Korelasi {var_x} vs TCL — {sel_prov} (2015–2024)"
 
             # ── Cleaning: pastikan kedua kolom numerik, buang NaN/inf ──
-            df_sc = df_sc_raw[[hover_col, x_col_name, col_y]].copy()
+            cols_needed = [c for c in [hover_col, x_col_name, col_y] if c in df_sc_raw.columns]
+            missing = [c for c in [hover_col, x_col_name, col_y] if c not in df_sc_raw.columns]
+            if missing:
+            st.warning(f"⚠️ Kolom tidak ditemukan: {missing}")
+            df_sc = pd.DataFrame()
+            else:
+            df_sc = df_sc_raw[cols_needed].copy()
             df_sc[x_col_name] = pd.to_numeric(
                 df_sc[x_col_name].astype(str).str.replace(',', '').str.strip(),
                 errors='coerce'

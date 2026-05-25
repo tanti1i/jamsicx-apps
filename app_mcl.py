@@ -21,8 +21,8 @@ st.markdown("""
 <style>
     /* Background Imersif */
     .stApp {
-        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
-                     url('https://raw.githubusercontent.com/tanti1i/jamsicx-apps/refs/heads/main/404268504069646243.jpg.jpeg');
+        background: linear-gradient(rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.38)), 
+                    url('https://raw.githubusercontent.com/tanti1i/jamsicx-apps/refs/heads/main/1025343040186607754.jpg.jpeg');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -39,14 +39,14 @@ st.markdown("""
         font-weight: 600 !important;
     }
     .stSelectbox label p {
-        color: #facc15 !important; 
+        color: #b8d4b8 !important; 
         font-weight: bold !important;
         font-size: 1.05rem !important;
     }
 
     /* === FIX FILE UPLOADER RE-STYLING === */
     [data-testid="stFileUploader"] label p {
-        color: #facc15 !important;
+        color: #b8d4b8 !important;
         font-weight: bold !important;
         font-size: 1.1rem !important;
         text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
@@ -55,16 +55,16 @@ st.markdown("""
         color: #ffffff !important;
     }
     [data-testid="stFileUploader"] button {
-        background-color: #15803d !important;
+        background-color: #2d5a3d !important;
         color: #ffffff !important;
-        border: 1px solid #facc15 !important;
+        border: 1px solid #8aab8a !important;
     }
 
     /* Judul Utama */
     .main-title {
         font-size: 5rem !important;
         font-family: 'Arial Black', sans-serif;
-        background: linear-gradient(to bottom, #facc15 0%, #fbbf24 100%);
+        background: linear-gradient(to bottom, #ddeedd 0%, #b8d4b8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
@@ -72,56 +72,66 @@ st.markdown("""
         filter: drop-shadow(0px 5px 15px rgba(0,0,0,0.9));
     }
 
-    /* Glassmorphism Card */
+    /* Glassmorphism Card — NO BLUR, PREMIUM GLASS */
     .menu-card {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 30px;
+        background: rgba(10, 25, 15, 0.52);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border: 1px solid rgba(184, 212, 184, 0.35);
+        border-radius: 24px;
         padding: 40px;
         text-align: center;
         height: 350px;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .menu-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12);
     }
 
-    /* === PREMIUM DARK CHART BACKGROUND (GANTI DARI WHITE) === */
+    /* === PREMIUM DARK CHART BACKGROUND === */
     .stPlotlyChart { 
-        background: rgba(10, 20, 38, 0.88) !important;
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(250, 204, 21, 0.18) !important;
+        background: rgba(10, 18, 13, 0.82) !important;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border: 1px solid rgba(138, 171, 138, 0.28) !important;
         border-radius: 20px; 
         padding: 15px; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     }
 
     /* Metrik */
     [data-testid="stMetricValue"] { color: #ffffff !important; font-weight: 800 !important; font-size: 1.8rem !important; }
-    [data-testid="stMetricLabel"] { color: #facc15 !important; font-weight: bold !important; font-size: 0.9rem !important; }
+    [data-testid="stMetricLabel"] { color: #b8d4b8 !important; font-weight: bold !important; font-size: 0.9rem !important; }
 
     /* Tombol Navigasi Umum */
     div.stButton > button {
-        background: linear-gradient(135deg, #15803d 0%, #166534 100%) !important;
+        background: linear-gradient(135deg, #2d5a3d 0%, #1a3d28 100%) !important;
         color: white !important;
-        border: 1px solid #facc15 !important;
+        border: 1px solid #8aab8a !important;
         border-radius: 12px;
         width: 100%;
     }
 
     /* Info Research Cards Styling */
     .research-card {
-        background: rgba(15, 23, 42, 0.65);
-        border: 1px solid rgba(250, 191, 36, 0.3);
+        background: rgba(10, 25, 15, 0.72);
+        border: 1px solid rgba(138, 171, 138, 0.4);
         border-radius: 16px;
         padding: 25px;
         margin-bottom: 20px;
-        backdrop-filter: blur(8px);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
     .research-card h4 {
-        color: #facc15 !important;
+        color: #b8d4b8 !important;
         margin-top: 0px;
-        border-bottom: 2px solid #15803d;
+        border-bottom: 2px solid #5a7a4a;
         padding-bottom: 8px;
     }
 </style>
@@ -242,7 +252,19 @@ if st.session_state.df is None:
 # --- 6. LOGIKA NAVIGASI ---
 if st.session_state.page == "Portal":
     st.markdown("<br><br><h1 class='main-title'>🌳 ForestGuard</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#dcfce7; letter-spacing:2px;'>SISTEM MONITORING DEFORESTASI DINAMIS</p>", unsafe_allow_html=True)
     
+    c_up1, c_up2, c_up3 = st.columns([1, 2, 1])
+    with c_up2:
+        up_file = st.file_uploader("📥 Unggah Dataset Deforestasi (CSV)", type=["csv"])
+        if up_file is not None:
+            raw_df = pd.read_csv(up_file)
+            raw_df.columns = raw_df.columns.str.strip()
+            if 'PROVINSI' in raw_df.columns:
+                raw_df['PROVINSI'] = raw_df['PROVINSI'].astype(str).str.strip().str.upper()
+            st.session_state.df = raw_df
+            st.success("🌲 Data Terintegrasi Sempurna!")
+
     st.markdown("<br>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     is_locked = st.session_state.df is None
@@ -269,7 +291,7 @@ else:
         df = st.session_state.df
 
         st.markdown(
-            "<h2 style='color:#facc15; font-weight:800; margin-bottom:4px;'>📊 Dashboard Deskriptif Spasial</h2>",
+            "<h2 style='color:#b8d4b8; font-weight:800; margin-bottom:4px;'>📊 Dashboard Deskriptif Spasial</h2>",
             unsafe_allow_html=True
         )
         st.markdown(
@@ -279,22 +301,21 @@ else:
         )
 
         # ── Konstanta Warna Premium ──────────────────────────────
-        C_BG      = '#071422'      # latar chart
-        C_PLOT    = '#0d1f35'      # latar area plot
+        C_BG      = '#0a120d'      # latar chart
+        C_PLOT    = '#0f1f12'      # latar area plot
         C_TEXT    = '#cbd5e1'      # teks chart
-        C_GOLD    = '#facc15'      # aksen emas
+        C_GOLD    = '#b8d4b8'      # aksen emas
         C_GRID    = 'rgba(255,255,255,0.06)'
-        C_BORDER  = 'rgba(250,204,21,0.20)'
+        C_BORDER  = 'rgba(138,171,138,0.25)'
 
         # Skala warna premium: hijau tua → kuning → oranye → merah
         CUSTOM_SCALE = [
-            [0.00, '#1a7a3a'],
-            [0.20, '#4caf50'],
-            [0.40, '#d4e157'],
-            [0.55, '#ffca28'],
-            [0.70, '#ff7043'],
-            [0.85, '#e53935'],
-            [1.00, '#7b0000'],
+            [0.00, '#ddeedd'],
+            [0.25, '#b8d4b8'],
+            [0.50, '#8aab8a'],
+            [0.70, '#5a7a4a'],
+            [0.85, '#2d5a3d'],
+            [1.00, '#1a3d28'],
         ]
 
         # ── Filter Row ───────────────────────────────────────────
@@ -310,8 +331,8 @@ else:
 
         df_yr = df[df['TAHUN'] == sel_thn].copy()
         # Gunakan range global agar skala warna konsisten antar tahun
-        g_min = 0
-        g_max = 200000
+        g_min = float(df[col_y].min())
+        g_max = float(df[col_y].max())
 
         # ── PETA CHOROPLETH (full-width) ──────────────────────────
         if geojson:
@@ -350,11 +371,11 @@ else:
                 visible=False,
                 bgcolor=C_BG,
                 showland=True,
-                landcolor='#0d1f35',
+                landcolor='#0f1f12',
                 showocean=True,
-                oceancolor='#071422',
+                oceancolor='#0a120d',
                 showlakes=True,
-                lakecolor='#071422',
+                lakecolor='#0a120d',
                 showcoastlines=True,
                 coastlinecolor='rgba(255,255,255,0.15)',
                 coastlinewidth=0.5,
@@ -390,7 +411,7 @@ else:
                         font=dict(color=C_TEXT, size=11)
                     ),
                     tickfont=dict(color=C_TEXT, size=9),
-                    bgcolor='rgba(7,20,34,0.85)',
+                    bgcolor='rgba(10,18,13,0.88)',
                     bordercolor=C_BORDER,
                     borderwidth=1,
                     len=0.72,
@@ -411,13 +432,21 @@ else:
                 pct_nasional = (loss_val / df_yr[col_y].sum()) * 100
                 df_prev = df[(df['TAHUN'] == sel_thn - 1) & (df['PROVINSI'] == sel_prov)]
 
-                sp1, m1, m2, m3, sp2 = st.columns([2, 3, 3, 3, 2])
+                m1, m2, m3, m4 = st.columns(4)
                 with m1:
-                     st.metric("🌲 Tree Cover Loss", f"{loss_val:,.0f} Ha")
+                    st.metric("🌲 Tree Cover Loss", f"{loss_val:,.0f} Ha")
                 with m2:
                     st.metric("🏆 Ranking Nasional", f"#{rank_val} / 34")
                 with m3:
                     st.metric("📊 % Kontribusi Nasional", f"{pct_nasional:.2f}%")
+                with m4:
+                    if not df_prev.empty:
+                        prev = df_prev[col_y].values[0]
+                        delta_pct = ((loss_val - prev) / prev) * 100
+                        st.metric("📈 Perubahan YoY", f"{delta_pct:+.1f}%",
+                                  delta=f"{delta_pct:+.1f}%", delta_color="inverse")
+                    else:
+                        st.metric("📈 Perubahan YoY", "—")
 
         # ── BARIS BAWAH: Scatter + Bar/Tren ──────────────────────
         col_l, col_r = st.columns([1, 1])
@@ -455,7 +484,7 @@ else:
                 coloraxis_colorbar=dict(
                     title=dict(text="Loss (Ha)", font=dict(color=C_TEXT, size=10)),
                     tickfont=dict(color=C_TEXT, size=8),
-                    bgcolor='rgba(7,20,34,0.85)',
+                    bgcolor='rgba(10,18,13,0.88)',
                     bordercolor=C_BORDER, borderwidth=1,
                     len=0.80, thickness=11,
                     tickformat=',d',
@@ -473,11 +502,11 @@ else:
                     df_ts, x='TAHUN', y=col_y,
                     title=f"📉 Tren Deforestasi — {sel_prov}",
                     labels={col_y: "TCL (Ha)", "TAHUN": "Tahun"},
-                    color_discrete_sequence=['#22c55e'],
+                    color_discrete_sequence=['#8aab8a'],
                 )
                 fig_r.update_traces(
-                    line_color='#4ade80',
-                    fillcolor='rgba(34,197,94,0.12)',
+                    line_color='#b8d4b8',
+                    fillcolor='rgba(90,122,74,0.18)',
                 )
                 fig_r.add_vline(
                     x=sel_thn, line_dash="dot",
@@ -536,7 +565,7 @@ else:
     # PENELITIAN — TIDAK DIUBAH
     # =========================================================
     elif st.session_state.page == "Penelitian":
-        st.markdown("<h2 style='text-align:center; color:#facc15; font-weight: 800;'>📖 Info Penelitian</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center; color:#b8d4b8; font-weight: 800;'>📖 Info Penelitian</h2>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         
         rc1, rc2 = st.columns(2)
@@ -584,8 +613,8 @@ else:
                 <table style='width:100%; border-collapse: collapse; font-size: 0.88rem;'>
                     <thead>
                         <tr>
-                            <th style='padding: 8px 14px; text-align: center; color: #facc15; width: 20%; font-weight: 700;'>Simbol</th>
-                            <th style='padding: 8px 14px; text-align: left; color: #facc15; font-weight: 700;'>Keterangan</th>
+                            <th style='padding: 8px 14px; text-align: center; color: #b8d4b8; width: 20%; font-weight: 700;'>Simbol</th>
+                            <th style='padding: 8px 14px; text-align: left; color: #b8d4b8; font-weight: 700;'>Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>

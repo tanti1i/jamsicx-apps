@@ -178,14 +178,7 @@ def load_geojson():
 
 @st.cache_data
 def load_internal_data():
-    """
-    Memuat data deforestasi dari file CSV yang tersimpan di GitHub.
-    URL: https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/data_jamsicx.csv
-    (Ganti username/repo sesuai repositori Anda yang sebenarnya)
-    """
-    # ── GANTI URL INI dengan raw URL GitHub Anda yang sebenarnya ──
     CSV_URL = "https://raw.githubusercontent.com/tanti1i/jamsicx-apps/refs/heads/main/data_jamsicx.csv"
-
     try:
         df = pd.read_csv(CSV_URL)
         df.columns = df.columns.str.strip()
@@ -193,6 +186,13 @@ def load_internal_data():
             df['PROVINSI'] = df['PROVINSI'].astype(str).str.strip().str.upper()
         if 'TAHUN' in df.columns:
             df['TAHUN'] = df['TAHUN'].astype(int)
+        # ── REVISI: Konversi semua kolom X & Y ke numerik saat loading ──
+        for col_key, col_name in {**{"Y": col_y}, **cols_x}.items():
+            if col_name in df.columns:
+                df[col_name] = pd.to_numeric(
+                    df[col_name].astype(str).str.replace(',', '').str.strip(),
+                    errors='coerce'
+                )
         return df
     except Exception as e:
         st.error(f"❌ Gagal memuat data dari GitHub: {e}")
@@ -282,14 +282,13 @@ else:
         )
 
         # ── Konstanta Warna Premium ──────────────────────────────
-        C_BG = 'rgba(15,35,20,0.65)'      # latar chart
-        C_PLOT = 'rgba(25,50,30,0.55)'    # latar area plot
-        C_TEXT    = '#cbd5e1'             # teks chart
-        C_GOLD    = '#facc15'             # aksen emas
+        C_BG = 'rgba(15,35,20,0.65)'
+        C_PLOT = 'rgba(25,50,30,0.55)'
+        C_TEXT    = '#cbd5e1'
+        C_GOLD    = '#facc15'
         C_GRID    = 'rgba(255,255,255,0.06)'
         C_BORDER  = 'rgba(250,204,21,0.20)'
 
-        # Skala warna premium: hijau tua → kuning → oranye → merah
         CUSTOM_SCALE = [
             [0.00, '#1a7a3a'],
             [0.20, '#4caf50'],
@@ -312,7 +311,6 @@ else:
             var_x = st.selectbox("📈 Analisis Korelasi X:", list(cols_x.keys()))
 
         df_yr = df[df['TAHUN'] == sel_thn].copy()
-        # Gunakan range global agar skala warna konsisten antar tahun
         g_min = 0
         g_max = 200000
 
@@ -331,7 +329,6 @@ else:
                 labels={col_y: "Tree Cover Loss (Ha)"},
             )
 
-            # ── Zoom berdasarkan lat/lon range (reliable) ─────────
             if sel_prov == "Semua Provinsi":
                 lat_range = [-11.5, 7.5]
                 lon_range = [93.5, 142.5]
@@ -339,7 +336,7 @@ else:
             else:
                 bounds = PROV_BOUNDS.get(
                     sel_prov,
-                    (-11.5, 7.5, 93.5, 142.5)   # fallback Indonesia penuh
+                    (-11.5, 7.5, 93.5, 142.5)
                 )
                 lat_pad = (bounds[1] - bounds[0]) * 0.12
                 lon_pad = (bounds[3] - bounds[2]) * 0.12
@@ -364,7 +361,6 @@ else:
                 showframe=False,
             )
 
-            # Highlight provinsi terpilih dengan outline
             if sel_prov != "Semua Provinsi":
                 fig_map.update_traces(
                     marker_line_color=C_GOLD,
@@ -427,51 +423,109 @@ else:
         col_l, col_r = st.columns([1, 1])
 
         with col_l:
-            # Scatter: semua provinsi tahun dipilih, atau semua tahun untuk provinsi dipilih
+            # ── REVISI: Siapkan data scatter dengan cleaning ketat ──
+            x_col_name = cols_x[var_x]
+
             if sel_prov == "Semua Provinsi":
-                df_sc = df_yr
+                df_sc_raw = df_yr.copy()
                 hover_col = "PROVINSI"
                 sc_title = f"Korelasi {var_x} vs Tree Cover Loss — {sel_thn}"
             else:
-                df_sc = df[df['PROVINSI'] == sel_prov].sort_values('TAHUN')
+                df_sc_raw = df[df['PROVINSI'] == sel_prov].sort_values('TAHUN').copy()
                 hover_col = "TAHUN"
                 sc_title = f"Korelasi {var_x} vs TCL — {sel_prov} (2015–2024)"
 
-            fig_sc = px.scatter(
-                df_sc,
-                x=cols_x[var_x],
-                y=col_y,
-                color=col_y,
-                trendline="ols",
-                hover_name=hover_col,
-                color_continuous_scale=CUSTOM_SCALE,
-                range_color=[g_min, g_max],
-                title=sc_title,
-                labels={col_y: "TCL (Ha)", cols_x[var_x]: var_x},
+            # ── Cleaning: pastikan kedua kolom numerik, buang NaN/inf ──
+            df_sc = df_sc_raw[[hover_col, x_col_name, col_y]].copy()
+            df_sc[x_col_name] = pd.to_numeric(
+                df_sc[x_col_name].astype(str).str.replace(',', '').str.strip(),
+                errors='coerce'
             )
-            fig_sc.update_layout(
-                paper_bgcolor=C_BG,
-                plot_bgcolor=C_PLOT,
-                font=dict(color=C_TEXT, size=11),
-                title=dict(font=dict(color=C_GOLD, size=13), x=0.01),
-                xaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID, linecolor=C_BORDER),
-                yaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID, linecolor=C_BORDER),
-                coloraxis_colorbar=dict(
-                    title=dict(text="Loss (Ha)", font=dict(color=C_TEXT, size=10)),
-                    tickfont=dict(color=C_TEXT, size=8),
-                    bgcolor='rgba(7,20,34,0.85)',
-                    bordercolor=C_BORDER, borderwidth=1,
-                    len=0.80, thickness=11,
-                    tickformat=',d',
-                ),
-                height=370,
-                margin=dict(l=10, r=10, t=50, b=10),
+            df_sc[col_y] = pd.to_numeric(
+                df_sc[col_y].astype(str).str.replace(',', '').str.strip(),
+                errors='coerce'
             )
-            st.plotly_chart(fig_sc, use_container_width=True)
+            df_sc = df_sc.replace([np.inf, -np.inf], np.nan).dropna(
+                subset=[x_col_name, col_y]
+            )
+
+            # ── Cek apakah data cukup untuk trendline OLS ──
+            # OLS butuh minimal 2 titik dengan variasi (tidak semua nilai sama)
+            can_trendline = (
+                len(df_sc) >= 2
+                and df_sc[x_col_name].nunique() > 1
+                and df_sc[col_y].nunique() > 1
+            )
+
+            if df_sc.empty:
+                # Tampilkan pesan informatif jika tidak ada data valid
+                st.markdown(
+                    f"""
+                    <div style='background:rgba(15,35,20,0.65); border:1px solid rgba(250,204,21,0.20);
+                                border-radius:20px; padding:30px; height:370px;
+                                display:flex; flex-direction:column; justify-content:center; align-items:center;'>
+                        <p style='color:#facc15; font-size:1.1rem; font-weight:700; text-align:center;'>
+                            ⚠️ Data {var_x} Tidak Tersedia
+                        </p>
+                        <p style='color:#94a3b8; font-size:0.9rem; text-align:center;'>
+                            Kolom <b>{x_col_name}</b> tidak memiliki data numerik valid
+                            untuk filter yang dipilih.
+                        </p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            else:
+                try:
+                    fig_sc = px.scatter(
+                        df_sc,
+                        x=x_col_name,
+                        y=col_y,
+                        color=col_y,
+                        trendline="ols" if can_trendline else None,
+                        hover_name=hover_col,
+                        color_continuous_scale=CUSTOM_SCALE,
+                        range_color=[g_min, g_max],
+                        title=sc_title,
+                        labels={col_y: "TCL (Ha)", x_col_name: var_x},
+                    )
+                except Exception:
+                    # Fallback: scatter tanpa trendline jika OLS tetap gagal
+                    fig_sc = px.scatter(
+                        df_sc,
+                        x=x_col_name,
+                        y=col_y,
+                        color=col_y,
+                        trendline=None,
+                        hover_name=hover_col,
+                        color_continuous_scale=CUSTOM_SCALE,
+                        range_color=[g_min, g_max],
+                        title=sc_title + " (trendline tidak tersedia)",
+                        labels={col_y: "TCL (Ha)", x_col_name: var_x},
+                    )
+
+                fig_sc.update_layout(
+                    paper_bgcolor=C_BG,
+                    plot_bgcolor=C_PLOT,
+                    font=dict(color=C_TEXT, size=11),
+                    title=dict(font=dict(color=C_GOLD, size=13), x=0.01),
+                    xaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID, linecolor=C_BORDER),
+                    yaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID, linecolor=C_BORDER),
+                    coloraxis_colorbar=dict(
+                        title=dict(text="Loss (Ha)", font=dict(color=C_TEXT, size=10)),
+                        tickfont=dict(color=C_TEXT, size=8),
+                        bgcolor='rgba(7,20,34,0.85)',
+                        bordercolor=C_BORDER, borderwidth=1,
+                        len=0.80, thickness=11,
+                        tickformat=',d',
+                    ),
+                    height=370,
+                    margin=dict(l=10, r=10, t=50, b=10),
+                )
+                st.plotly_chart(fig_sc, use_container_width=True)
 
         with col_r:
             if sel_prov != "Semua Provinsi":
-                # Tren waktu provinsi terpilih
                 df_ts = df[df['PROVINSI'] == sel_prov].sort_values('TAHUN')
                 fig_r = px.area(
                     df_ts, x='TAHUN', y=col_y,
@@ -491,7 +545,6 @@ else:
                     annotation_font_size=11,
                 )
             else:
-                # Top-10 provinsi dengan kehilangan tertinggi
                 top10 = (
                     df_yr.nlargest(10, col_y)[['PROVINSI', col_y]]
                     .sort_values(col_y, ascending=True)
@@ -530,10 +583,8 @@ else:
         prov_target = st.selectbox("Fokus Wilayah Prediksi:", sorted(df['PROVINSI'].unique()))
         hist = df[df['PROVINSI'] == prov_target].sort_values('TAHUN')
         
-        # Perbaikan baris 281
         raw_weights = np.random.dirichlet([5, 3.5, 2, 1])
         
-        # Sisa logika prediksi di sini...
         st.info("Sistem sedang memproses algoritma MERF untuk " + prov_target)
 
     # =========================================================

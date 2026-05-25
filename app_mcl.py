@@ -176,70 +176,24 @@ def load_geojson():
 @st.cache_data
 def load_internal_data():
     """
-    Database internal — data deforestasi Indonesia 2015–2024 (34 Provinsi).
-    Dibangun secara programatik berbasis parameter aktual per wilayah.
+    Memuat data deforestasi dari file CSV yang tersimpan di GitHub.
+    URL: https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/data_jamsicx.csv
+    (Ganti username/repo sesuai repositori Anda yang sebenarnya)
     """
-    np.random.seed(42)
+    # ── GANTI URL INI dengan raw URL GitHub Anda yang sebenarnya ──
+    CSV_URL = "https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/data_jamsicx.csv"
 
-    # Struktur: nama_provinsi -> (base_loss_Ha, luas_lahan_ribu_Ha, rasio_kebakaran,
-    #                              perkebunan_ribu_Ha, kepadatan_penduduk, populasi_ternak, pdrb_tambang_pct)
-    prov_params = {
-        "ACEH":                  (42000,  3563,  0.18, 420,   19,    950000,   3.2),
-        "SUMATERA UTARA":        (35000,  1472,  0.20, 890,   191,   4800000,  2.1),
-        "SUMATERA BARAT":        (19000,  1249,  0.12, 310,   126,   1600000,  1.8),
-        "RIAU":                  (88000,  873,   0.35, 2450,  76,    2200000,  18.5),
-        "JAMBI":                 (52000,  533,   0.28, 780,   74,    1300000,  11.2),
-        "SUMATERA SELATAN":      (65000,  879,   0.30, 1100,  100,   2500000,  22.4),
-        "BENGKULU":              (16000,  990,   0.15, 240,   101,   760000,   5.1),
-        "LAMPUNG":               (14000,  345,   0.10, 650,   261,   3500000,  2.3),
-        "BANGKA BELITUNG":       (11000,  166,   0.08, 70,    83,    280000,   28.7),
-        "KEPULAUAN RIAU":        (7500,   95,    0.06, 30,    265,   160000,   8.4),
-        "DKI JAKARTA":           (480,    7,     0.01, 0,     16343, 45000,    0.2),
-        "JAWA BARAT":            (8500,   346,   0.05, 210,   1399,  9800000,  1.4),
-        "JAWA TENGAH":           (6800,   327,   0.04, 190,   1058,  11200000, 0.9),
-        "DI YOGYAKARTA":         (750,    31,    0.02, 15,    1201,  820000,   0.3),
-        "JAWA TIMUR":            (10500,  478,   0.06, 320,   827,   17500000, 4.1),
-        "BANTEN":                (4800,   108,   0.03, 55,    1358,  2100000,  0.8),
-        "BALI":                  (1100,   56,    0.02, 25,    745,   1400000,  0.4),
-        "NUSA TENGGARA BARAT":   (7800,   201,   0.08, 110,   285,   2800000,  6.5),
-        "NUSA TENGGARA TIMUR":   (23000,  1503,  0.12, 80,    106,   4200000,  3.2),
-        "KALIMANTAN BARAT":      (92000,  14705, 0.25, 1600,  35,    1700000,  9.8),
-        "KALIMANTAN TENGAH":     (108000, 15355, 0.30, 1900,  20,    980000,   16.4),
-        "KALIMANTAN SELATAN":    (43000,  3753,  0.22, 620,   108,   1350000,  31.2),
-        "KALIMANTAN TIMUR":      (118000, 12726, 0.28, 1050,  30,    850000,   42.8),
-        "KALIMANTAN UTARA":      (52000,  7188,  0.20, 400,   10,    310000,   25.6),
-        "SULAWESI UTARA":        (11500,  1487,  0.08, 220,   177,   780000,   3.6),
-        "SULAWESI TENGAH":       (33000,  6803,  0.15, 450,   30,    1420000,  12.8),
-        "SULAWESI SELATAN":      (18500,  4618,  0.10, 580,   192,   6800000,  7.9),
-        "SULAWESI TENGGARA":     (20000,  3807,  0.12, 280,   65,    1100000,  15.3),
-        "GORONTALO":             (7500,   1207,  0.07, 130,   103,   590000,   4.2),
-        "SULAWESI BARAT":        (17000,  1669,  0.10, 310,   74,    820000,   6.8),
-        "MALUKU":                (26000,  4688,  0.10, 120,   37,    680000,   5.1),
-        "MALUKU UTARA":          (30000,  3194,  0.12, 130,   42,    490000,   11.7),
-        "PAPUA BARAT":           (62000,  9722,  0.15, 110,   11,    340000,   18.9),
-        "PAPUA":                 (148000, 31587, 0.18, 250,   11,    860000,   22.4),
-    }
-
-    years = list(range(2015, 2025))
-    rows = []
-    for year in years:
-        yr_idx = year - 2015
-        for prov, (base, area, fire_r, plant, pop_d, lstk, pdrb) in prov_params.items():
-            trend = 1.0 + yr_idx * 0.018
-            noise = np.random.normal(1.0, 0.12)
-            y = max(100.0, base * trend * noise)
-            rows.append({
-                'PROVINSI':     prov,
-                'TAHUN':        year,
-                col_y:          round(y, 1),
-                cols_x['X1']:   round(area  * np.random.uniform(0.92, 1.05), 1),
-                cols_x['X2']:   round(y * fire_r * np.random.uniform(0.80, 1.30), 1),
-                cols_x['X3']:   round(plant * np.random.uniform(0.94, 1.06), 1),
-                cols_x['X4']:   round(pop_d  * np.random.uniform(0.98, 1.02), 1),
-                cols_x['X5']:   int(lstk   * np.random.uniform(0.95, 1.05)),
-                cols_x['X6']:   round(pdrb  * np.random.uniform(0.92, 1.08), 2),
-            })
-    return pd.DataFrame(rows)
+    try:
+        df = pd.read_csv(CSV_URL)
+        df.columns = df.columns.str.strip()
+        if 'PROVINSI' in df.columns:
+            df['PROVINSI'] = df['PROVINSI'].astype(str).str.strip().str.upper()
+        if 'TAHUN' in df.columns:
+            df['TAHUN'] = df['TAHUN'].astype(int)
+        return df
+    except Exception as e:
+        st.error(f"❌ Gagal memuat data dari GitHub: {e}")
+        return None
 
 # Batas lat/lon per provinsi — dipakai untuk zoom peta yang akurat
 PROV_BOUNDS = {
@@ -268,20 +222,20 @@ PROV_BOUNDS = {
     "KALIMANTAN TIMUR":     (-3.5,  2.5, 113.5, 119.0),
     "KALIMANTAN UTARA":     ( 1.5,  4.5, 114.5, 118.5),
     "SULAWESI UTARA":       ( 0.0,  3.5, 123.0, 127.5),
-    "GORONTALO":            (-1.0,  1.5, 121.5, 124.0),
     "SULAWESI TENGAH":      (-4.0,  2.0, 119.5, 125.0),
-    "SULAWESI BARAT":       (-3.5, -1.5, 118.5, 120.5),
     "SULAWESI SELATAN":     (-7.0, -2.5, 119.5, 122.5),
     "SULAWESI TENGGARA":    (-6.0, -2.5, 121.0, 124.5),
-    "MALUKU UTARA":         (-1.5,  3.5, 125.5, 130.0),
+    "GORONTALO":            (-1.0,  1.5, 121.5, 124.0),
+    "SULAWESI BARAT":       (-3.5, -1.5, 118.5, 120.5),
     "MALUKU":               (-8.5, -2.0, 126.0, 135.0),
+    "MALUKU UTARA":         (-1.5,  3.5, 125.5, 130.0),
     "PAPUA BARAT":          (-5.0,  1.5, 130.0, 136.5),
     "PAPUA":                (-9.5, -0.5, 131.0, 141.5),
 }
 
 geojson = load_geojson()
 
-# === AUTO-LOAD DATABASE INTERNAL (tidak perlu upload manual) ===
+# === AUTO-LOAD DATA DARI GITHUB CSV ===
 if st.session_state.df is None:
     st.session_state.df = load_internal_data()
 

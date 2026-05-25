@@ -182,6 +182,7 @@ def load_internal_data():
     try:
         df = pd.read_csv(CSV_URL)
         df.columns = df.columns.str.strip()
+        df.columns = df.columns.str.replace(r'\s+', ' ', regex=True)
         if 'PROVINSI' in df.columns:
             df['PROVINSI'] = df['PROVINSI'].astype(str).str.strip().str.upper()
         if 'TAHUN' in df.columns:

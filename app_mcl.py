@@ -147,7 +147,7 @@ cols_x = {
 @st.cache_data
 def load_geojson():
     try:
-        url = "https://raw.githubusercontent.com/tanti1i/jamsicx-apps/refs/heads/main/data_jamsicx.csv"
+        url = "https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/indonesia-province-simple.json"
         res = requests.get(url).json()
         for feature in res['features']:
             nama = str(feature['properties'].get('Propinsi', '')).strip().upper()
@@ -183,18 +183,26 @@ def load_internal_data():
     CSV_URL = "https://raw.githubusercontent.com/tanti1i/jamsicx-apps/refs/heads/main/data_jamsicx.csv"
     try:
         df = pd.read_csv(CSV_URL)
-        df.columns = df.columns.str.strip()
+        # ── REVISI FIX: strip + padatkan semua spasi ganda di nama kolom ──
+        df.columns = (
+            df.columns
+            .str.strip()
+            .str.replace(r'\s+', ' ', regex=True)
+        )
         if 'PROVINSI' in df.columns:
             df['PROVINSI'] = df['PROVINSI'].astype(str).str.strip().str.upper()
         if 'TAHUN' in df.columns:
             df['TAHUN'] = df['TAHUN'].astype(int)
-        # ── REVISI: Konversi semua kolom X & Y ke numerik saat loading ──
+        # ── Konversi semua kolom X & Y ke numerik saat loading ──
         for col_key, col_name in {**{"Y": col_y}, **cols_x}.items():
             if col_name in df.columns:
                 df[col_name] = pd.to_numeric(
                     df[col_name].astype(str).str.replace(',', '').str.strip(),
                     errors='coerce'
                 )
+            else:
+                # Kolom tidak ditemukan setelah normalisasi — buat kolom NaN
+                df[col_name] = np.nan
         return df
     except Exception as e:
         st.error(f"❌ Gagal memuat data dari GitHub: {e}")
@@ -263,7 +271,7 @@ def prepare_data(df):
 
     for key, col in cols_x.items():
 
-        if col is not None:
+        if col is not None and col in data.columns:
 
             data[f'{key}_ma3'] = (
                 data
@@ -283,7 +291,7 @@ def prepare_data(df):
 
     for key in cols_x.keys():
 
-        if cols_x[key] is not None:
+        if cols_x[key] is not None and f'{key}_ma3' in data.columns:
 
             new_col = f'{key}_ma3_log'
 
@@ -340,7 +348,7 @@ def forecast_all_provinces(model, feature_cols, df, n_years=3):
 
         for key, col in cols_x.items():
 
-            if col is not None:
+            if col is not None and col in prov_data.columns:
 
                 x_hist[key] = prov_data[col].tail(3).tolist()
 
@@ -453,7 +461,12 @@ else:
             list_prov = ["Semua Provinsi"] + sorted(df['PROVINSI'].unique().tolist())
             sel_prov = st.selectbox("🗺️ Fokus Wilayah (Zoom Provinsi):", list_prov)
         with fc3:
-            var_x = st.selectbox("📈 Analisis Korelasi X:", list(cols_x.keys()))
+            # ── REVISI FIX: hanya tampilkan X yang kolomnya benar-benar ada di df ──
+            valid_x_keys = [
+                k for k, v in cols_x.items()
+                if v in df.columns and df[v].notna().any()
+            ]
+            var_x = st.selectbox("📈 Analisis Korelasi X:", valid_x_keys)
 
         df_yr = df[df['TAHUN'] == sel_thn].copy()
         g_min = 0
@@ -554,7 +567,6 @@ else:
                 loss_val = row_prov[col_y].values[0]
                 rank_val = int(df_yr[col_y].rank(ascending=False).loc[row_prov.index[0]])
                 pct_nasional = (loss_val / df_yr[col_y].sum()) * 100
-                df_prev = df[(df['TAHUN'] == sel_thn - 1) & (df['PROVINSI'] == sel_prov)]
 
                 sp1, m1, m2, m3, sp2 = st.columns([2, 3, 3, 3, 2])
                 with m1:
@@ -568,7 +580,6 @@ else:
         col_l, col_r = st.columns([1, 1])
 
         with col_l:
-            # ── REVISI: Siapkan data scatter dengan cleaning ketat ──
             x_col_name = cols_x[var_x]
 
             if sel_prov == "Semua Provinsi":
@@ -580,94 +591,118 @@ else:
                 hover_col = "TAHUN"
                 sc_title = f"Korelasi {var_x} vs TCL — {sel_prov} (2015–2024)"
 
-            # ── Cleaning: pastikan kedua kolom numerik, buang NaN/inf ──
-            df_sc = df_sc_raw[[hover_col, x_col_name, col_y]].copy()
-            df_sc[x_col_name] = pd.to_numeric(
-                df_sc[x_col_name].astype(str).str.replace(',', '').str.strip(),
-                errors='coerce'
-            )
-            df_sc[col_y] = pd.to_numeric(
-                df_sc[col_y].astype(str).str.replace(',', '').str.strip(),
-                errors='coerce'
-            )
-            df_sc = df_sc.replace([np.inf, -np.inf], np.nan).dropna(
-                subset=[x_col_name, col_y]
-            )
+            # ── REVISI FIX: pastikan hover_col & x_col_name ada di df_sc_raw ──
+            available_cols = [
+                c for c in [hover_col, x_col_name, col_y]
+                if c in df_sc_raw.columns
+            ]
+            missing_cols = [
+                c for c in [hover_col, x_col_name, col_y]
+                if c not in df_sc_raw.columns
+            ]
 
-            # ── Cek apakah data cukup untuk trendline OLS ──
-            # OLS butuh minimal 2 titik dengan variasi (tidak semua nilai sama)
-            can_trendline = (
-                len(df_sc) >= 2
-                and df_sc[x_col_name].nunique() > 1
-                and df_sc[col_y].nunique() > 1
-            )
-
-            if df_sc.empty:
-                # Tampilkan pesan informatif jika tidak ada data valid
+            if missing_cols:
                 st.markdown(
                     f"""
                     <div style='background:rgba(15,35,20,0.65); border:1px solid rgba(250,204,21,0.20);
                                 border-radius:20px; padding:30px; height:370px;
                                 display:flex; flex-direction:column; justify-content:center; align-items:center;'>
                         <p style='color:#facc15; font-size:1.1rem; font-weight:700; text-align:center;'>
-                            ⚠️ Data {var_x} Tidak Tersedia
+                            ⚠️ Kolom Tidak Ditemukan
                         </p>
                         <p style='color:#94a3b8; font-size:0.9rem; text-align:center;'>
-                            Kolom <b>{x_col_name}</b> tidak memiliki data numerik valid
-                            untuk filter yang dipilih.
+                            Kolom berikut tidak ada di data: <b>{', '.join(missing_cols)}</b>
                         </p>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
             else:
-                try:
-                    fig_sc = px.scatter(
-                        df_sc,
-                        x=x_col_name,
-                        y=col_y,
-                        color=col_y,
-                        trendline="ols" if can_trendline else None,
-                        hover_name=hover_col,
-                        color_continuous_scale=CUSTOM_SCALE,
-                        range_color=[g_min, g_max],
-                        title=sc_title,
-                        labels={col_y: "TCL (Ha)", x_col_name: var_x},
-                    )
-                except Exception:
-                    # Fallback: scatter tanpa trendline jika OLS tetap gagal
-                    fig_sc = px.scatter(
-                        df_sc,
-                        x=x_col_name,
-                        y=col_y,
-                        color=col_y,
-                        trendline=None,
-                        hover_name=hover_col,
-                        color_continuous_scale=CUSTOM_SCALE,
-                        range_color=[g_min, g_max],
-                        title=sc_title + " (trendline tidak tersedia)",
-                        labels={col_y: "TCL (Ha)", x_col_name: var_x},
-                    )
-
-                fig_sc.update_layout(
-                    paper_bgcolor=C_BG,
-                    plot_bgcolor=C_PLOT,
-                    font=dict(color=C_TEXT, size=11),
-                    title=dict(font=dict(color=C_GOLD, size=13), x=0.01),
-                    xaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID, linecolor=C_BORDER),
-                    yaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID, linecolor=C_BORDER),
-                    coloraxis_colorbar=dict(
-                        title=dict(text="Loss (Ha)", font=dict(color=C_TEXT, size=10)),
-                        tickfont=dict(color=C_TEXT, size=8),
-                        bgcolor='rgba(7,20,34,0.85)',
-                        bordercolor=C_BORDER, borderwidth=1,
-                        len=0.80, thickness=11,
-                        tickformat=',d',
-                    ),
-                    height=370,
-                    margin=dict(l=10, r=10, t=50, b=10),
+                # ── Cleaning: pastikan kedua kolom numerik, buang NaN/inf ──
+                df_sc = df_sc_raw[[hover_col, x_col_name, col_y]].copy()
+                df_sc[x_col_name] = pd.to_numeric(
+                    df_sc[x_col_name].astype(str).str.replace(',', '').str.strip(),
+                    errors='coerce'
                 )
-                st.plotly_chart(fig_sc, use_container_width=True)
+                df_sc[col_y] = pd.to_numeric(
+                    df_sc[col_y].astype(str).str.replace(',', '').str.strip(),
+                    errors='coerce'
+                )
+                df_sc = df_sc.replace([np.inf, -np.inf], np.nan).dropna(
+                    subset=[x_col_name, col_y]
+                )
+
+                # ── Cek apakah data cukup untuk trendline OLS ──
+                can_trendline = (
+                    len(df_sc) >= 2
+                    and df_sc[x_col_name].nunique() > 1
+                    and df_sc[col_y].nunique() > 1
+                )
+
+                if df_sc.empty:
+                    st.markdown(
+                        f"""
+                        <div style='background:rgba(15,35,20,0.65); border:1px solid rgba(250,204,21,0.20);
+                                    border-radius:20px; padding:30px; height:370px;
+                                    display:flex; flex-direction:column; justify-content:center; align-items:center;'>
+                            <p style='color:#facc15; font-size:1.1rem; font-weight:700; text-align:center;'>
+                                ⚠️ Data {var_x} Tidak Tersedia
+                            </p>
+                            <p style='color:#94a3b8; font-size:0.9rem; text-align:center;'>
+                                Kolom <b>{x_col_name}</b> tidak memiliki data numerik valid
+                                untuk filter yang dipilih.
+                            </p>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                else:
+                    try:
+                        fig_sc = px.scatter(
+                            df_sc,
+                            x=x_col_name,
+                            y=col_y,
+                            color=col_y,
+                            trendline="ols" if can_trendline else None,
+                            hover_name=hover_col,
+                            color_continuous_scale=CUSTOM_SCALE,
+                            range_color=[g_min, g_max],
+                            title=sc_title,
+                            labels={col_y: "TCL (Ha)", x_col_name: var_x},
+                        )
+                    except Exception:
+                        fig_sc = px.scatter(
+                            df_sc,
+                            x=x_col_name,
+                            y=col_y,
+                            color=col_y,
+                            trendline=None,
+                            hover_name=hover_col,
+                            color_continuous_scale=CUSTOM_SCALE,
+                            range_color=[g_min, g_max],
+                            title=sc_title + " (trendline tidak tersedia)",
+                            labels={col_y: "TCL (Ha)", x_col_name: var_x},
+                        )
+
+                    fig_sc.update_layout(
+                        paper_bgcolor=C_BG,
+                        plot_bgcolor=C_PLOT,
+                        font=dict(color=C_TEXT, size=11),
+                        title=dict(font=dict(color=C_GOLD, size=13), x=0.01),
+                        xaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID, linecolor=C_BORDER),
+                        yaxis=dict(gridcolor=C_GRID, zerolinecolor=C_GRID, linecolor=C_BORDER),
+                        coloraxis_colorbar=dict(
+                            title=dict(text="Loss (Ha)", font=dict(color=C_TEXT, size=10)),
+                            tickfont=dict(color=C_TEXT, size=8),
+                            bgcolor='rgba(7,20,34,0.85)',
+                            bordercolor=C_BORDER, borderwidth=1,
+                            len=0.80, thickness=11,
+                            tickformat=',d',
+                        ),
+                        height=370,
+                        margin=dict(l=10, r=10, t=50, b=10),
+                    )
+                    st.plotly_chart(fig_sc, use_container_width=True)
 
         with col_r:
             if sel_prov != "Semua Provinsi":
@@ -743,14 +778,11 @@ else:
 
             new_df = pd.read_csv(uploaded_file)
 
+            # ── REVISI FIX: normalisasi kolom CSV upload sama seperti load_internal_data ──
             new_df.columns = (
                 new_df.columns
                 .str.strip()
-            )
-
-            new_df.columns = (
-                new_df.columns
-                .str.replace(r"\s+", " ", regex=True)
+                .str.replace(r'\s+', ' ', regex=True)
             )
 
             new_df['PROVINSI'] = (
@@ -759,6 +791,19 @@ else:
                 .str.upper()
                 .str.strip()
             )
+
+            if 'TAHUN' in new_df.columns:
+                new_df['TAHUN'] = new_df['TAHUN'].astype(int)
+
+            # Konversi kolom numerik pada upload baru
+            for col_key, col_name in {**{"Y": col_y}, **cols_x}.items():
+                if col_name in new_df.columns:
+                    new_df[col_name] = pd.to_numeric(
+                        new_df[col_name].astype(str).str.replace(',', '').str.strip(),
+                        errors='coerce'
+                    )
+                else:
+                    new_df[col_name] = np.nan
 
             tahun_baru = new_df['TAHUN'].unique()
 
